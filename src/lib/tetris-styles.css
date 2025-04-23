@@ -29,7 +29,7 @@
   font-family: 'Arial', sans-serif;
   color: var(--text-color);
   padding: 20px;
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" transform="rotate(-45)"><path d="M16 2 L2 30 L12 24 L16 30 L20 24 L30 30 Z" fill="rgba(233, 69, 96, 0.8)" stroke="white" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="white"/></svg>') 16 16, auto;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" transform="rotate(-45)"><path d="M16 2 L2 30 L12 24 L16 30 L20 24 L30 30 Z" fill="rgba(233, 69, 96, 0.8)" stroke="white" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="white"/></svg>') 8 8, auto;
 }
 
 .title {
@@ -182,7 +182,7 @@
   color: var(--bg-color);
   border: none;
   border-radius: 6px;
-  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" transform="rotate(-45)"><path d="M16 2 L2 30 L12 24 L16 30 L20 24 L30 30 Z" fill="rgba(0, 247, 255, 0.8)" stroke="white" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="white"/></svg>') 16 16, pointer;
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" transform="rotate(-45)"><path d="M16 2 L2 30 L12 24 L16 30 L20 24 L30 30 Z" fill="rgba(0, 247, 255, 0.8)" stroke="white" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="white"/></svg>') 8 8, pointer;
   font-size: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;

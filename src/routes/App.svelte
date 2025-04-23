@@ -62,6 +62,8 @@
   let score = $state(0);
   let gameOver = $state(false);
   let paused = $state(false);
+  let interval = $state(0);
+  let gameLevel = $state(1);
 
   function randomType() {
     const types = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
@@ -174,7 +176,33 @@
         newBoard.splice(row, 1);
         newBoard.unshift(Array(10).fill(0));
       }
-      score += fullRows.length * 100;
+      const level = Math.floor(score / 1000) + 1;
+      switch (fullRows.length) {
+        case 1:
+          score += 100 * level;
+          break;
+        case 2:
+          score += 300 * level;
+          break;
+        case 3:
+          score += 500 * level;
+          break;
+        case 4:
+          score += 800 * level;
+          break;
+      }
+
+      // Increase gameLevel and speed every 1000 points
+      if (score >= gameLevel * 1000) {
+        gameLevel++;
+        clearInterval(interval);
+        interval = setInterval(() => {
+          if (!gameOver && !paused) {
+            moveDown();
+          }
+        }, Math.max(1000 - (gameLevel - 1) * 100, 100));
+      }
+
     }
 
     board = newBoard;
@@ -234,11 +262,13 @@
     score = 0;
     gameOver = false;
     paused = false;
+    gameLevel = 1;
+    interval = 0;
   }
 
   $effect(() => {
     startGame();
-    const interval = setInterval(() => {
+    interval = setInterval(() => {
       if (!gameOver && !paused) {
         moveDown();
       }
