@@ -7,8 +7,8 @@
   --text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4),
                 0 0 8px rgba(233, 69, 96, 0.2);
   --side-font-size: 24px;
-  --neon-glow: #ff2e63; /* Cyberpunk pink */
-  --neon-accent: #00f7ff; /* Cyberpunk cyan */
+  --neon-glow: #45454f;
+  --neon-accent: #194274;
 }
 
 /* Apply selection styles to selectable text */
@@ -35,11 +35,11 @@
 .title {
   font-size: 2.8rem;
   margin-bottom: 25px;
-  background: linear-gradient(45deg, var(--neon-glow), #533483);
+  background: linear-gradient(45deg, var(--accent-color), #533483);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 1px 10px var(--neon-glow);
+  text-shadow: 0 1px 10px var(--accent-color);
   animation: neonFlickerLoop 3s ease-in-out infinite;
 }
 

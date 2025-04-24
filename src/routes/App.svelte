@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import '../lib/tetris-styles.css';
   
   const SHAPES = {
@@ -56,17 +56,26 @@
     L: 'orange'
   };
 
-  let board = $state(Array(20).fill().map(() => Array(10).fill(0)));
-  let tetromino = $state(null);
-  let nextTetromino = $state(null);
+  type Tetromino = {
+    type: keyof typeof SHAPES;
+    rotation: number;
+    row: number;
+    col: number;
+    shape: number[];
+    color: string;
+  };
+
+  let board = $state(Array(20).fill(0).map(() => Array(10).fill(0)));
+  let tetromino = $state<Tetromino | null>(null);
+  let nextTetromino = $state<Tetromino | null>(null);
   let score = $state(0);
   let gameOver = $state(false);
   let paused = $state(false);
   let interval = $state(0);
   let gameLevel = $state(1);
 
-  function randomType() {
-    const types = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
+  function randomType(): keyof typeof SHAPES {
+    const types: Array<keyof typeof SHAPES> = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
     return types[Math.floor(Math.random() * types.length)];
   }
 
@@ -82,7 +91,7 @@
     };
   }
 
-  function isValidPosition(tetro) {
+  function isValidPosition(tetro: Tetromino | null) {
     if (!tetro) return false;
 
     for (let i = 0; i < 16; i++) {
@@ -102,7 +111,7 @@
   }
 
   function moveLeft() {
-    if (gameOver || paused) return;
+    if (gameOver || paused || !tetromino) return;
     const newTetromino = { ...tetromino, col: tetromino.col - 1 };
     if (isValidPosition(newTetromino)) {
       tetromino = newTetromino;
@@ -110,7 +119,7 @@
   }
 
   function moveRight() {
-    if (gameOver || paused) return;
+    if (gameOver || paused || !tetromino) return;  
     const newTetromino = { ...tetromino, col: tetromino.col + 1 };
     if (isValidPosition(newTetromino)) {
       tetromino = newTetromino;
@@ -118,7 +127,7 @@
   }
 
   function moveDown() {
-    if (gameOver || paused) return;
+    if (gameOver || paused || !tetromino) return;
     const newTetromino = { ...tetromino, row: tetromino.row + 1 };
     if (isValidPosition(newTetromino)) {
       tetromino = newTetromino;
@@ -128,7 +137,7 @@
   }
 
   function rotate() {
-    if (gameOver || paused) return;
+    if (gameOver || paused || !tetromino) return;
     const newRotation = (tetromino.rotation + 1) % 4;
     const newShape = SHAPES[tetromino.type][newRotation];
     let newTetromino = {
@@ -152,6 +161,7 @@
   function landTetromino() {
     // Create a new board to ensure reactivity
     const newBoard = board.map(row => [...row]);
+    if (!tetromino) return;
 
     // Fix the tetromino
     for (let i = 0; i < 16; i++) {
@@ -213,10 +223,13 @@
 
     if (!isValidPosition(tetromino)) {
       gameOver = true;
+      if (interval) {
+        clearInterval(interval);
+      }
     }
   }
 
-  function getCellColor(row, col) {
+  function getCellColor(row: number, col: number) {
     if (tetromino && !gameOver) {
       const x = col - tetromino.col;
       const y = row - tetromino.row;
@@ -236,7 +249,20 @@
     paused = !paused;
   }
 
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Escape') {
+      paused = !paused;
+      return;
+    }
+    if (event.key === 'Enter') {
+      startGame();
+      return;
+    }
+    if (event.key === 'r') {
+      startGame();
+      return;
+    }
+
     if (paused) return;
     if (gameOver) return;
     switch (event.key) {
@@ -246,7 +272,7 @@
       case 'ArrowUp': rotate(); break;
       case ' ':
         // Hard drop
-        while (isValidPosition({ ...tetromino, row: tetromino.row + 1 })) {
+        while (tetromino && isValidPosition({ ...tetromino, row: tetromino.row + 1 } as Tetromino)) {
           tetromino = { ...tetromino, row: tetromino.row + 1 };
         }
         landTetromino();
@@ -256,24 +282,28 @@
   }
 
   function startGame() {
-    board = Array(20).fill().map(() => Array(10).fill(0));
+    if (interval) {
+      clearInterval(interval);
+    }
+    // gameOver = false;
+    paused = false;
+    board = Array(20).fill(0).map(() => Array(10).fill(0));
     tetromino = createRandomTetromino();
     nextTetromino = createRandomTetromino();
     score = 0;
     gameOver = false;
     paused = false;
     gameLevel = 1;
-    interval = 0;
-  }
-
-  $effect(() => {
-    startGame();
     interval = setInterval(() => {
       if (!gameOver && !paused) {
         moveDown();
       }
     }, 1000);
+  }
+  
+  startGame();
 
+  $effect(() => {
     return () => clearInterval(interval);
   });
 </script>
@@ -285,7 +315,7 @@
       <div class="game-over-overlay">
           <div class="game-over">
               <h1>Game Over</h1>
-              <button class="neon-button" on:click={startGame}>Play Again</button>
+              <button class="neon-button" onclick={startGame}>Play Again</button>
           </div>
       </div>
   {/if}
@@ -313,12 +343,12 @@
               <p> Space Drop | ↓ Move down </p>
           </div>
             <div class="buttons">
-              <button class="restart neon-button" on:click={startGame}>
+              <button class="restart neon-button" onclick={startGame} aria-label="Restart Game">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                   <path d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z"/>
                 </svg>
               </button>
-              <button class="neon-button" on:click={toggleGame}>
+              <button class="neon-button" onclick={toggleGame}>
                 {#if paused}
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
                     <path d="M8 5v14l11-7z"/>
