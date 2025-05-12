@@ -73,10 +73,13 @@
   let paused = $state(false);
   let interval = $state(0);
   let gameLevel = $state(1);
+  let lastTwoTypes = $state<Array<keyof typeof SHAPES>>([]);
 
   function randomType(): keyof typeof SHAPES {
     const types: Array<keyof typeof SHAPES> = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
-    return types[Math.floor(Math.random() * types.length)];
+    const availableTypes = types.filter(type => !lastTwoTypes.includes(type));
+    const pool = availableTypes.length > 0 ? availableTypes : types;
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
   function createRandomTetromino() {
@@ -219,6 +222,7 @@
 
     // Create new tetromino
     tetromino = nextTetromino || createRandomTetromino();
+    lastTwoTypes = [tetromino.type, ...(lastTwoTypes.slice(0, 1))];
     nextTetromino = createRandomTetromino();
 
     if (!isValidPosition(tetromino)) {
@@ -285,10 +289,10 @@
     if (interval) {
       clearInterval(interval);
     }
-    // gameOver = false;
     paused = false;
     board = Array(20).fill(0).map(() => Array(10).fill(0));
     tetromino = createRandomTetromino();
+    lastTwoTypes = [tetromino.type];
     nextTetromino = createRandomTetromino();
     score = 0;
     gameOver = false;
