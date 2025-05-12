@@ -45,9 +45,9 @@
 
 .game-area {
   display: flex;
-  gap: 30px;
+  gap: 15px;
   align-items: flex-start;
-  padding: 20px;
+  padding: 24px;
   border-radius: 25px;
   background: #20253d;
   box-shadow: inset 9px 9px 18px #161a2a, inset -9px -9px 18px #2a3050;
