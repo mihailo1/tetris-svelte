@@ -12,7 +12,7 @@
   let score: number = $state(0);
   let gameOver: boolean = $state(false);
   let paused: boolean = $state(false);
-  let interval: any = $state(0);
+  let interval: number = $state(0);
   let gameLevel: number = $state(1);
   let lastTwoTypes: Array<keyof typeof SHAPES> = $state([]);
 
