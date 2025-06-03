@@ -4,7 +4,7 @@
   export let nextTetromino;
   export let score;
   export let paused;
-  export let gameLevel;
+//   export let gameLevel;
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 </script>
