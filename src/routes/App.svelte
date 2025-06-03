@@ -1,88 +1,28 @@
 <script lang="ts">
   import '../lib/tetris-styles.css';
-  
-  const SHAPES = {
-    I: [
-      [0,0,0,0, 1,1,1,1, 0,0,0,0, 0,0,0,0],
-      [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
-      [0,0,0,0, 0,0,0,0, 1,1,1,1, 0,0,0,0],
-      [0,1,0,0, 0,1,0,0, 0,1,0,0, 0,1,0,0]
-    ],
-    O: [
-      [0,0,0,0, 0,1,1,0, 0,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,1,1,0, 0,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,1,1,0, 0,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,1,1,0, 0,1,1,0, 0,0,0,0]
-    ],
-    T: [
-      [0,0,0,0, 0,1,0,0, 1,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,1,0,0, 0,1,1,0, 0,1,0,0],
-      [0,0,0,0, 0,0,0,0, 1,1,1,0, 0,1,0,0],
-      [0,0,0,0, 0,1,0,0, 1,1,0,0, 0,1,0,0]
-    ],
-    S: [
-      [0,0,0,0, 0,1,1,0, 1,1,0,0, 0,0,0,0],
-      [0,0,0,0, 0,1,0,0, 0,1,1,0, 0,0,1,0],
-      [0,0,0,0, 0,1,1,0, 1,1,0,0, 0,0,0,0],
-      [0,0,0,0, 1,0,0,0, 1,1,0,0, 0,1,0,0]
-    ],
-    Z: [
-      [0,0,0,0, 1,1,0,0, 0,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,0,1,0, 0,1,1,0, 0,1,0,0],
-      [0,0,0,0, 1,1,0,0, 0,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,1,0,0, 1,1,0,0, 1,0,0,0]
-    ],
-    J: [
-      [0,0,0,0, 1,0,0,0, 1,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,1,1,0, 0,1,0,0, 0,1,0,0],
-      [0,0,0,0, 0,0,0,0, 1,1,1,0, 0,0,1,0],
-      [0,0,0,0, 0,1,0,0, 0,1,0,0, 1,1,0,0]
-    ],
-    L: [
-      [0,0,0,0, 0,0,1,0, 1,1,1,0, 0,0,0,0],
-      [0,0,0,0, 0,1,0,0, 0,1,0,0, 0,1,1,0],
-      [0,0,0,0, 0,0,0,0, 1,1,1,0, 1,0,0,0],
-      [0,0,0,0, 1,1,0,0, 0,1,0,0, 0,1,0,0]
-    ]
-  };
+  import Title from '$lib/Title.svelte';
+  import GameArea from '$lib/GameArea.svelte';
+  import GameOverOverlay from '$lib/GameOverOverlay.svelte';
+  import type { Tetromino, Board } from '$lib/types';
+  import { SHAPES, COLORS, TETROMINO_TYPES } from '$lib/constants';
 
-  const COLORS = {
-    I: 'cyan',
-    O: 'yellow',
-    T: 'purple',
-    S: 'green',
-    Z: 'red',
-    J: 'blue',
-    L: 'orange'
-  };
-
-  type Tetromino = {
-    type: keyof typeof SHAPES;
-    rotation: number;
-    row: number;
-    col: number;
-    shape: number[];
-    color: string;
-  };
-
-  let board = $state(Array(20).fill(0).map(() => Array(10).fill(0)));
-  let tetromino = $state<Tetromino | null>(null);
-  let nextTetromino = $state<Tetromino | null>(null);
-  let score = $state(0);
-  let gameOver = $state(false);
-  let paused = $state(false);
-  let interval = $state(0);
-  let gameLevel = $state(1);
-  let lastTwoTypes = $state<Array<keyof typeof SHAPES>>([]);
+  let board: Board = $state(Array(20).fill(0).map(() => Array(10).fill(0)));
+  let tetromino: Tetromino | null = $state(null);
+  let nextTetromino: Tetromino | null = $state(null);
+  let score: number = $state(0);
+  let gameOver: boolean = $state(false);
+  let paused: boolean = $state(false);
+  let interval: any = $state(0);
+  let gameLevel: number = $state(1);
+  let lastTwoTypes: Array<keyof typeof SHAPES> = $state([]);
 
   function randomType(): keyof typeof SHAPES {
-    const types: Array<keyof typeof SHAPES> = ['I', 'O', 'T', 'S', 'Z', 'J', 'L'];
-    const availableTypes = types.filter(type => !lastTwoTypes.includes(type));
-    const pool = availableTypes.length > 0 ? availableTypes : types;
+    const availableTypes = TETROMINO_TYPES.filter(type => !lastTwoTypes.includes(type));
+    const pool = availableTypes.length > 0 ? availableTypes : TETROMINO_TYPES;
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  function createRandomTetromino() {
+  function createRandomTetromino(): Tetromino {
     const type = randomType();
     return {
       type,
@@ -233,21 +173,6 @@
     }
   }
 
-  function getCellColor(row: number, col: number) {
-    if (tetromino && !gameOver) {
-      const x = col - tetromino.col;
-      const y = row - tetromino.row;
-      if (x >= 0 && x < 4 && y >= 0 && y < 4) {
-        const index = y * 4 + x;
-        if (tetromino.shape[index]) {
-          return tetromino.color;
-        }
-      }
-    }
-
-    return board[row][col] || 'transparent';
-  }
-
   function toggleGame() {
     if (gameOver) return;
     paused = !paused;
@@ -313,73 +238,20 @@
 </script>
 
 <div class="container">
-  <h2 class="title">Tetris</h2>
-  
+  <Title />
+  <GameArea
+    {board}
+    {tetromino}
+    {nextTetromino}
+    {score}
+    {paused}
+    {gameOver}
+    gameLevel={gameLevel}
+    on:restart={startGame}
+    on:togglePause={toggleGame}
+  />
   {#if gameOver}
-      <div class="game-over-overlay">
-          <div class="game-over">
-              <h1>Game Over</h1>
-              <button class="neon-button" onclick={startGame}>Play Again</button>
-          </div>
-      </div>
+    <GameOverOverlay {score} gameLevel={gameLevel} on:restart={startGame} />
   {/if}
-
-  <div class="game-area">
-      <div class="side">
-          <div class="next-piece">
-              <h3>Next:</h3>
-              <div class="next-grid">
-                  {#if nextTetromino}
-                      {#each Array(16) as _, i}
-                          <div
-                              class="next-cell"
-                              class:active={nextTetromino.shape[i]}
-                              style:background-color={nextTetromino.shape[i] ? nextTetromino.color : 'transparent'}
-                          ></div>
-                      {/each}
-                  {/if}
-              </div>
-          </div>
-          <p class="score">Score: {score}</p>
-          <div class="controls">
-              <p>Controls:</p>
-              <p> ← → Move | ↑ Rotate</p>
-              <p> Space Drop | ↓ Move down </p>
-          </div>
-            <div class="buttons">
-              <button class="restart neon-button" onclick={startGame} aria-label="Restart Game">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                  <path d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z"/>
-                </svg>
-              </button>
-              <button class="neon-button" onclick={toggleGame}>
-                {#if paused}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path d="M8 5v14l11-7z"/>
-                  </svg>
-                {:else}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path d="M6 4h4v16H6zm8 0h4v16h-4z"/>
-                  </svg>
-                {/if}
-              </button>
-            </div>
-      </div>
-      
-      <div class="grid">
-          {#each board as row, y}
-              <div class="row">
-                  {#each row as cell, x}
-                      <div
-                          class="cell"
-                          class:active={cell !== null}
-                          style:background-color={getCellColor(y, x)}
-                      ></div>
-                  {/each}
-              </div>
-          {/each}
-      </div>
-  </div>
 </div>
-
 <svelte:window on:keydown={handleKeyDown} />
